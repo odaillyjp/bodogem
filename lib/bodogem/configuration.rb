@@ -11,7 +11,6 @@ module Bodogem
 
     def setting
       @client = Bodogem::SlackInterface::Client.new(channel)
-      @client.start
     end
   end
 end

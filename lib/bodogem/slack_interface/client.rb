@@ -6,15 +6,13 @@ module Bodogem
       attr_accessor :router
 
       def initialize(channel_name)
-        @client = Bodogem::SlackInterface::Client.connect
+        @client = SlackInterface::Client.connect
         @channel = @client.web_client.channels_list['channels'].detect { |c| c['name'] == channel_name }
-        @router = nil
 
         @client.on :message do |data|
-          if current_channel?(data) && !self_message?(data) && router
-            # TODO: Logger
-            p data
-            router.dispatch(data['text'])
+          if current_channel?(data) && !self_message?(data)
+            Application.logger.info "GET DATA: #{data}"
+            Application.router.dispatch(data['text'])
           end
         end
       end
@@ -23,7 +21,7 @@ module Bodogem
         return @client if @client
 
         Slack.configure do |config|
-          config.token = Bodogem.configuration.token
+          config.token = Application.config.token
         end
 
         @client = Slack::RealTime::Client.new

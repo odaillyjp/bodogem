@@ -8,13 +8,13 @@ module Bodogem
       def initialize(channel_name)
         @client = Bodogem::SlackInterface::Client.connect
         @channel = @client.web_client.channels_list['channels'].detect { |c| c['name'] == channel_name }
-        @router = Bodogem::SlackInterface::Router.new
+        @router = nil
 
         @client.on :message do |data|
-          if current_channel?(data) && !self_message?(data)
+          if current_channel?(data) && !self_message?(data) && router
             # TODO: Logger
             p data
-            @router.dispatch(data['text'])
+            router.dispatch(data['text'])
           end
         end
       end

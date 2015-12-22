@@ -27,12 +27,12 @@ module Bodogem
       end
 
       def run
-        main_router = SlackInterface::Router.new
+        main_router = Application::Router.new
 
         packages.each do |package|
           main_router.draw /\A#{package.title}をはじめる\z/ do
             client.puts "#{package.title}を準備しています..."
-            game_router = SlackInterface::Router.new
+            game_router = Application::Router.new
 
             game_router.draw /\A#{package.title}をおわる\z/ do
               Application.router = main_router

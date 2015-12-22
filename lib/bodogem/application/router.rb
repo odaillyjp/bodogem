@@ -1,5 +1,5 @@
 module Bodogem
-  module SlackInterface
+  class Application
     class Router
       def initialize
         @routes = []

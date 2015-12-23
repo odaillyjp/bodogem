@@ -5,4 +5,9 @@ require "bodogem/router"
 require "bodogem/slack_interface/client"
 
 module Bodogem
+  class << self
+    def application
+      @application ||= Application.instance
+    end
+  end
 end

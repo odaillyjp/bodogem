@@ -1,9 +1,7 @@
 require 'logger'
-require 'singleton'
 
 module Bodogem
   class Application
-    include 'singleton'
     attr_accessor :router
 
     def config

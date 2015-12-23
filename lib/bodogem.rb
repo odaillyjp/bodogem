@@ -7,7 +7,7 @@ require "bodogem/slack_interface/client"
 module Bodogem
   class << self
     def application
-      @application ||= Application.instance
+      @application ||= Application.new
     end
   end
 end

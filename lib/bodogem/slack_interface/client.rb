@@ -3,7 +3,7 @@ require 'slack-ruby-client'
 module Bodogem
   module SlackInterface
     class Client
-      attr_accessor :router
+      attr_reader :client
 
       def initialize(channel_name)
         @client = SlackInterface::Client.connect
@@ -11,8 +11,8 @@ module Bodogem
 
         @client.on :message do |data|
           if current_channel?(data) && !self_message?(data)
-            Application.logger.info "GET DATA: #{data}"
-            Application.router.dispatch(data['text'])
+            Bodogem.application.logger.info "GET DATA: #{data}"
+            Bodogem.application.router.dispatch(data['text'])
           end
         end
       end
@@ -21,7 +21,7 @@ module Bodogem
         return @client if @client
 
         Slack.configure do |config|
-          config.token = Application.config.token
+          config.token = Bodogem.application.config.token
         end
 
         @client = Slack::RealTime::Client.new

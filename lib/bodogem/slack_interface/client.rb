@@ -9,6 +9,7 @@ module Bodogem
         @client = SlackInterface::Client.connect(token)
         @channel = @client.web_client.channels_list['channels'].detect { |c| c['name'] == channel_name }
 
+        # TODO: Bodogem と密結合になっているので、外に出したい.
         @client.on :message do |data|
           if current_channel?(data) && !self_message?(data)
             Bodogem.application.logger.info "GET DATA: #{data}"

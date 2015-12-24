@@ -14,7 +14,7 @@ module Bodogem
     end
 
     def client
-      @client ||= SlackInterface::Client.new(config.channel)
+      @client ||= SlackInterface::Client.new(channel_name: config.channel, token: config.token)
     end
 
     def packages

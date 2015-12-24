@@ -5,8 +5,8 @@ module Bodogem
     class Client
       attr_reader :client
 
-      def initialize(channel_name)
-        @client = SlackInterface::Client.connect
+      def initialize(channel_name: nil, token: nil)
+        @client = SlackInterface::Client.connect(token)
         @channel = @client.web_client.channels_list['channels'].detect { |c| c['name'] == channel_name }
 
         @client.on :message do |data|
@@ -17,13 +17,10 @@ module Bodogem
         end
       end
 
-      def self.connect
+      def self.connect(token)
         return @client if @client
 
-        Slack.configure do |config|
-          config.token = Bodogem.application.config.token
-        end
-
+        Slack.configure { |config| config.token = token }
         @client = Slack::RealTime::Client.new
         @client.web_client.auth_test
         @client

@@ -34,16 +34,16 @@ module Bodogem
           game_router = Application::Router.new
 
           game_router.draw /\A#{package.title}をおわる\z/ do
-            Application.router = main_router
+            self.router = main_router
             client.puts "#{package.title}を終了しました"
           end
 
-          Application.router = game_router
+          self.router = game_router
           package.new.start
         end
       end
 
-      Application.router = main_router
+      self.router = main_router
       logger.info 'Bodogem::Application.run done.'
       client.start
     end

@@ -2,8 +2,6 @@ require 'logger'
 
 module Bodogem
   class Application
-    attr_accessor :router
-
     def config
       @config ||= Application::Configuration.new
     end
@@ -25,27 +23,50 @@ module Bodogem
       config.logger
     end
 
+    def router
+      @router ||= Application::Router.new
+    end
+
     def run
-      main_router = Application::Router.new
-
       packages.each do |package|
-        main_router.draw /\A#{package.title}をはじめる\z/ do
+        root_mapping.draw "#{package.title}をはじめる" do
           client.puts "#{package.title}を準備しています..."
-          game_router = Application::Router.new
+          router.switch(package.routes) if package.respond_to?(:routes)
 
-          game_router.draw /\A#{package.title}をおわる\z/ do
-            self.router = main_router
-            client.puts "#{package.title}を終了しました"
+          @package_thread = Thread.start do
+            begin
+              package.start
+            rescue => e
+              logger.error "title = #{package.title}, message = #{e}"
+              client.puts "エラーが発生しました。\n#{package.title}を終了します..."
+            ensure
+              switch_root_mapping
+              client.puts "#{package.title}を終了しました。"
+            end
           end
-
-          self.router = game_router
-          package.new.start
         end
       end
 
-      self.router = main_router
+      switch_root_mapping
       logger.info 'Bodogem::Application.run done.'
       client.start
+    end
+
+    def exit_package
+      return unless @package_thread
+
+      @package_thread.exit
+      @package_thread = nil
+    end
+
+    private
+
+    def root_mapping
+      @root_mapping ||= Application::Router::Mapping.new
+    end
+
+    def switch_root_mapping
+      router.switch(root_mapping)
     end
   end
 end

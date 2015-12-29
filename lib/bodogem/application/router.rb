@@ -6,7 +6,7 @@ module Bodogem
       end
 
       def dispatch(text)
-        route = @mapping.routes.detect { |route| route[:matcher].match(text) }
+        route = @mapping.routes.detect { |route| route[:matcher] === text }
         return unless route
         match_data = route[:matcher].match(text)
         route[:callback].call(match_data)

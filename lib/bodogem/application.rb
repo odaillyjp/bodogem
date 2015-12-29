@@ -33,12 +33,12 @@ module Bodogem
           client.puts "#{package.title}を準備しています..."
           router.switch(package.routes) if package.respond_to?(:routes)
 
-          @package_thread = Thread.start do
+          Thread.start do
             begin
               package.start
             rescue => e
-              logger.error "title = #{package.title}, message = #{e}"
-              client.puts "エラーが発生しました。\n#{package.title}を終了します..."
+              logger.error "{\"package_title\"=>\"#{package.title}\", \"exception\"=>\"#{e.class}\", \"message\"=\"#{e.message}\", \"backtrace\"=>\"#{e.backtrace.join("\n")}\""
+              client.puts "エラーが発生しました。"
             ensure
               switch_root_mapping
               client.puts "#{package.title}を終了しました。"
@@ -50,13 +50,6 @@ module Bodogem
       switch_root_mapping
       logger.info 'Bodogem::Application.run done.'
       client.start
-    end
-
-    def exit_package
-      return unless @package_thread
-
-      @package_thread.exit
-      @package_thread = nil
     end
 
     private

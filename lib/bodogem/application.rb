@@ -24,42 +24,38 @@ module Bodogem
     end
 
     def router
-      @router ||= Application::Router.new
+      @router ||= Application::Router.new(client)
     end
 
-    def run
+    def run(dry: false)
+      Performance::Benchmarker.log(title: 'Completed Application#setup in') { setup }
+      client.start unless dry
+    end
+
+    private
+
+    def setup
       packages.each do |package|
-        root_mapping.draw "#{package.title}をはじめる" do
+        router.mapping.draw "#{package.title}をはじめる" do
           client.puts "#{package.title}を準備しています..."
-          router.switch(package.routes) if package.respond_to?(:routes)
 
           Thread.start do
             begin
               package.start
             rescue => e
-              logger.error "{\"package_title\"=>\"#{package.title}\", \"exception\"=>\"#{e.class}\", \"message\"=\"#{e.message}\", \"backtrace\"=>\"#{e.backtrace.join("\n")}\""
+              logger.error "EXCEPTION: #{e.class}(#{e.message}):\n#{e.backtrace[0..5].join("\n")}"
               client.puts "エラーが発生しました。"
             ensure
-              switch_root_mapping
+              router.run
               client.puts "#{package.title}を終了しました。"
             end
           end
+
+          router.stop
         end
       end
 
-      switch_root_mapping
-      logger.info 'Bodogem::Application.run done.'
-      client.start
-    end
-
-    private
-
-    def root_mapping
-      @root_mapping ||= Application::Router::Mapping.new
-    end
-
-    def switch_root_mapping
-      router.switch(root_mapping)
+      router.run
     end
   end
 end

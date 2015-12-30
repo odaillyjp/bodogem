@@ -3,21 +3,16 @@ require 'slack-ruby-client'
 module Bodogem
   module SlackInterface
     class Client
-      def initialize(channel_name: nil, token: nil)
+      def initialize(channel_name: nil, token: nil, logger: Bodogem.application.logger)
         @client = SlackInterface::Client.connect(token)
         @channel = @client.web_client.channels_list['channels'].detect { |c| c['name'] == channel_name }
+        @logger = logger
         @queue = Queue.new
 
-        # TODO: Bodogem と密結合になっているので、外に出したい.
         @client.on :message do |data|
           if current_channel?(data) && !self_message?(data)
-            Bodogem.application.logger.info "GET DATA: #{data}"
-
-            if @queue.num_waiting > 0
-              @queue.push(data['text'])
-            else
-              Bodogem.application.router.dispatch(data['text'])
-            end
+            @logger.info "GET DATA: #{data}"
+            @queue.push(data['text']) if @queue.num_waiting > 0
           end
         end
       end

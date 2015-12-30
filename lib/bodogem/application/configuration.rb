@@ -23,13 +23,13 @@ module Bodogem
       end
 
       def setting
-        setting_logger unless logger
+        setting_logger if logger.nil?
         self
       end
 
       def setting_logger
         @logger = Logger.new(STDOUT)
-        @logger.level = @log_level || 0
+        @logger.level = @log_level || Logger::INFO
       end
     end
   end

@@ -11,7 +11,7 @@ module Bodogem
 
         @client.on :message do |data|
           if current_channel?(data) && !self_message?(data)
-            @logger.info "GET DATA: #{data}"
+            @logger.info "Get response: #{data}"
             @queue.push(data['text']) if @queue.num_waiting > 0
           end
         end
@@ -32,7 +32,8 @@ module Bodogem
       end
 
       def puts(text)
-        @client.web_client.chat_postMessage(channel: @channel['id'], text: text, as_user: true)
+        data = @client.web_client.chat_postMessage(channel: @channel['id'], text: text, as_user: true)
+        @logger.info "Post message: #{data}"
       end
 
       def input(format: /\A.*\z/)

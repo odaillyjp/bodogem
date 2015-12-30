@@ -43,7 +43,7 @@ module Bodogem
             begin
               package.start
             rescue => e
-              logger.error "EXCEPTION: #{e.class}(#{e.message}):\n#{e.backtrace[0..5].join("\n")}"
+              logger.error "#{e.class}: #{e.message}\n{\"module\"=>\"#{package}\"}\n#{e.backtrace[0..5].join("\n")}"
               client.puts "エラーが発生しました。"
             ensure
               router.run

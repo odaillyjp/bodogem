@@ -9,37 +9,48 @@ module Bodogem
         @client = client
       end
 
-      def run
-        return if @thread && @thread.alive?
+      def run(daemon: false)
+        block = lambda do
+          text = nil
+          route = nil
 
-        @thread = Thread.start do
-          loop { dispatch(@client.input.string) }
+          loop do
+            text = listen_to_message
+            route = @mapping.detect(text)
+            break if route
+          end
+
+          result = dispatch(text, route)
+          return block.call if route[:opts] && route[:opts][:continue]
+          result
         end
-      end
 
-      def stop
-        @thread.exit
-        @thread = nil
+        return Thread.start(&block) if daemon
+        block.call
       end
 
       private
 
-      def dispatch(text)
-        route = @mapping.routes.detect { |route| route[:matcher] === text }
-        return unless route
+      def listen_to_message
+        @client.input.string
+      end
+
+      def dispatch(text, route)
         match_data = route[:matcher].match(text)
         route[:callback].call(match_data)
       end
 
       class Mapping
-        attr_reader :routes
-
         def initialize
           @routes = []
         end
 
-        def draw(matcher, &block)
-          @routes << { matcher: matcher, callback: block }
+        def draw(matcher, opts = {}, &block)
+          @routes << { matcher: matcher, opts: opts, callback: block }
+        end
+
+        def detect(text)
+          @routes.detect { |router| router[:matcher] === text }
         end
       end
     end

@@ -23,10 +23,6 @@ module Bodogem
       config.logger
     end
 
-    def router
-      @router ||= Application::Router.new(client)
-    end
-
     def run(dry: false)
       Performance::Benchmarker.log(title: 'Completed Application#setup in') { setup }
       client.start unless dry
@@ -46,16 +42,23 @@ module Bodogem
               logger.error "#{e.class}: #{e.message}\n{\"module\"=>\"#{package}\"}\n#{e.backtrace[0..5].join("\n")}"
               client.puts "エラーが発生しました。"
             ensure
-              router.run
+              run_router_as_daemon
               client.puts "#{package.title}を終了しました。"
             end
           end
-
-          router.stop
         end
       end
 
-      router.run
+      run_router_as_daemon
+    end
+
+    def router
+      @router ||= Application::Router.new(client)
+    end
+
+    def run_router_as_daemon
+      return if @thread && @thread.alive?
+      @thread = router.run(daemon: true)
     end
   end
 end
